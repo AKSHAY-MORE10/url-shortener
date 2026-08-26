@@ -1,0 +1,74 @@
+// This is your Prisma schema file.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  urls Url[]
+
+  @@map("users")
+}
+
+// ============================================================
+// URL
+// ============================================================
+
+model Url {
+  id          BigInt   @id @default(autoincrement())
+  shortCode   String   @unique
+  originalUrl String   @db.Text
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  clickCount  BigInt   @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  expiresAt   DateTime?
+
+  clicks      ClickEvent[]
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("urls")
+}
+
+// ============================================================
+// CLICK / ANALYTICS EVENT
+// ============================================================
+
+model ClickEvent {
+  id         String   @id @default(uuid())
+
+  urlId      BigInt
+  url        Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  clickedAt  DateTime @default(now())
+
+  ipHash     String?
+  userAgent  String?  @db.Text
+  referrer   String?  @db.Text
+  country    String?
+  deviceType String?
+
+  @@index([urlId])
+  @@index([urlId, clickedAt])
+  @@map("click_events")
+}
