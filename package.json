@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "dotenv -e .env.test -- jest --runInBand",
     "postinstall": "prisma skills sync || exit 0"
   },
   "keywords": [],
@@ -21,9 +21,17 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@swc/core": "^1.16.1",
+    "@swc/jest": "^0.2.39",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^26.3.0",
+    "@types/supertest": "^7.2.1",
+    "dotenv-cli": "^11.0.0",
+    "jest": "^30.4.2",
     "prisma": "^7.10.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
