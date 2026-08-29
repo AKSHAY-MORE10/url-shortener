@@ -112,9 +112,40 @@ describe("URL Shortener API Integration Tests", () => {
       expect(redirectRes.status).toBe(302);
       expect(redirectRes.header.location).toBe("https://redirect-target.com");
 
-      // 3. Verify it was cached in Redis DB 1
+      // 3. Verify it was cached in Redis DB 1 as JSON { id, originalUrl }
       const cached = await redis.get(`url:${shortCode}`);
-      expect(cached).toBe("https://redirect-target.com");
+      expect(cached).not.toBeNull();
+      const parsed = JSON.parse(cached!);
+      expect(parsed.originalUrl).toBe("https://redirect-target.com");
+      expect(parsed.id).toBe(createRes.body.id);
+    });
+
+    it("should record a ClickEvent and increment clickCount on redirect", async () => {
+      const createRes = await request(app)
+        .post("/api/v1/urls")
+        .send({ originalUrl: "https://analytics-target.com" });
+
+      const { shortCode, id } = createRes.body;
+
+      await request(app)
+        .get(`/${shortCode}`)
+        .set("User-Agent", "Test-Agent-1.0")
+        .set("Referer", "https://google.com");
+
+      // Wait a moment for fire-and-forget async write
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const updatedUrl = await prisma.url.findUnique({
+        where: { id: BigInt(id) },
+        include: { clicks: true },
+      });
+
+      expect(updatedUrl).not.toBeNull();
+      expect(Number(updatedUrl?.clickCount)).toBe(1);
+      expect(updatedUrl?.clicks.length).toBe(1);
+      expect(updatedUrl?.clicks[0].userAgent).toBe("Test-Agent-1.0");
+      expect(updatedUrl?.clicks[0].referrer).toBe("https://google.com");
+      expect(updatedUrl?.clicks[0].ipHash).toBeDefined();
     });
 
     it("should return 404 Not Found for a non-existent short code", async () => {
@@ -159,8 +190,10 @@ describe("URL Shortener API Integration Tests", () => {
       expect(firstRes.status).toBe(302);
 
       // Verify cached in Redis
-      const cachedUrl = await redis.get(`url:${shortCode}`);
-      expect(cachedUrl).toBe("https://cached-example.com");
+      const cached = await redis.get(`url:${shortCode}`);
+      expect(cached).not.toBeNull();
+      const parsed = JSON.parse(cached!);
+      expect(parsed.originalUrl).toBe("https://cached-example.com");
 
       // Second request - hits cache
       const secondRes = await request(app).get(`/${shortCode}`);

@@ -38,33 +38,31 @@ export const UrlService = {
     return toResponseDTO(url);
   },
 
-  async resolveShortUrl(shortCode: string): Promise<string> {
+  async resolveShortUrl(shortCode: string): Promise<{ originalUrl: string; urlId: bigint }> {
     const cacheKey = `url:${shortCode}`;
 
     const cached = await redis.get(cacheKey);
     if (cached) {
-      return cached; // cache hit — Postgres never touched
+      const parsed = JSON.parse(cached) as { id: string; originalUrl: string };
+      return { originalUrl: parsed.originalUrl, urlId: BigInt(parsed.id) };
     }
 
     const url = await UrlRepository.findByShortCode(shortCode);
 
-    if (!url) {
-      throw new NotFoundError(`No URL found for short code: ${shortCode}`);
-    }
-
-    if (url.expiresAt && url.expiresAt < new Date()) {
-      throw new GoneError(`URL with short code: ${shortCode} has expired`);
-    }
+    if (!url) throw new NotFoundError(`No URL found for short code: ${shortCode}`);
+    if (url.expiresAt && url.expiresAt < new Date()) throw new GoneError(`URL has expired`);
 
     const ttl = url.expiresAt
-      ? Math.min(
-          DEFAULT_CACHE_TTL_SECONDS,
-          Math.floor((url.expiresAt.getTime() - Date.now()) / 1000)
-        )
+      ? Math.min(DEFAULT_CACHE_TTL_SECONDS, Math.floor((url.expiresAt.getTime() - Date.now()) / 1000))
       : DEFAULT_CACHE_TTL_SECONDS;
 
-    await redis.set(cacheKey, url.originalUrl, "EX", ttl);
+    await redis.set(
+      cacheKey,
+      JSON.stringify({ id: url.id.toString(), originalUrl: url.originalUrl }),
+      "EX",
+      ttl
+    );
 
-    return url.originalUrl;
+    return { originalUrl: url.originalUrl, urlId: url.id };
   },
 };

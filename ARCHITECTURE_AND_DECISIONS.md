@@ -279,17 +279,23 @@ JavaScript `JSON.stringify` throws a `TypeError: Do not know how to serialize a 
    - Integrated cache-aside pattern with dynamic expiration TTL calculation.
 8. **Automated Testing Suite**:
    - Configured Jest with `@swc/jest` in `jest.config.ts`.
-   - Created `tests/setup.ts` and `tests/url.test.ts` (9/9 tests passing).
+   - Created `tests/setup.ts` and `tests/url.test.ts` with complete database and Redis DB 1 isolation.
+9. **Atomic Token Bucket Rate Limiting (Phase 5)**:
+   - Built `src/utils/tokenBucket.lua.ts` executing atomic token bucket algorithm in Redis via `EVAL`.
+   - Created `src/middleware/rateLimit.ts` setting `X-RateLimit-Limit` & `X-RateLimit-Remaining` headers.
+   - Enforces burst limit (10 reqs) and sustained refill (10/min) returning `429 Too Many Requests`.
+10. **Asynchronous Click Analytics Tracking (Phase 4)**:
+   - Updated Redis cache shape from raw string to JSON `{ id, originalUrl }`, eliminating database lookups on cache hits for analytics.
+   - Built `src/utils/hash.ts` for SHA-256 IP hashing (GDPR/privacy-friendly telemetry).
+   - Created `src/repositories/clickEvent.repository.ts` and `UrlRepository.incrementClickCount(id)`.
+   - Built `src/services/analytics.service.ts` to record user-agent, referrer, and IP hash in fire-and-forget mode without blocking redirects.
 
 ---
 
 ## 8. Next Milestones & Future Roadmap
 
-* [ ] **Phase 4: Click Analytics & Background Tracking**
-  - Extract IP, User-Agent, Referrer, and Geo location.
-  - Push click events asynchronously to avoid latency on the redirect hot path.
-* [ ] **Phase 5: Rate Limiting & Abuse Prevention**
-  - Implement Redis sliding window rate limiter on URL creation endpoints.
+* [x] **Phase 4: Click Analytics & Background Tracking** (Completed)
+* [x] **Phase 5: Rate Limiting & Abuse Prevention** (Completed)
 * [ ] **Phase 6: User Authentication & JWT Ownership**
   - User registration, login, JWT validation middleware, user-scoped URLs.
 * [ ] **Phase 7: Production Containerization & CI/CD**

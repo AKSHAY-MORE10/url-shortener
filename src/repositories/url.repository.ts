@@ -33,4 +33,11 @@ export const UrlRepository = {
   async findByShortCode(shortCode: string) {
     return prisma.url.findUnique({ where: { shortCode } });
   },
+
+  async incrementClickCount(id: bigint) {
+    return prisma.url.update({
+      where: { id },
+      data: { clickCount: { increment: 1 } },
+    });
+  },
 };
