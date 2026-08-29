@@ -7,10 +7,10 @@ export const UrlController = {
     try {
       const { originalUrl, expiresAt } = req.body;
 
-      const result = await UrlService.createShortUrl({
-        originalUrl,
-        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
-      });
+      const result = await UrlService.createShortUrl(
+        { originalUrl, expiresAt: expiresAt ? new Date(expiresAt) : undefined },
+        req.userId
+      );
 
       res.status(201).json(result);
     } catch (err) {

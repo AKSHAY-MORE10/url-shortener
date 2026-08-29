@@ -293,6 +293,14 @@ JavaScript `JSON.stringify` throws a `TypeError: Do not know how to serialize a 
     - Created `.github/workflows/ci.yml` running ephemeral `postgres:16` and `redis:7-alpine` service containers.
     - Zero external secrets dependencies — creates isolated disposable database for every commit and PR.
     - Added `"test:ci": "jest --runInBand"` to `package.json`.
+12. **User Authentication & JWT URL Ownership (Phase 6)**:
+    - Added `passwordHash` to `User` schema and ran Prisma migration.
+    - Implemented `bcryptjs` password hashing with constant-time comparison to protect against timing attacks.
+    - Implemented JWT token signing & verification (`src/utils/jwt.ts`).
+    - Created dual middleware: `optionalAuth` (gracefully attaches `req.userId` for mixed-access endpoints) and `requireAuth` (strict 401 guard).
+    - Mounted `/api/v1/auth/register` and `/api/v1/auth/login` with enumeration-resistant error responses.
+    - Linked authenticated URL creations to the user (`urls.userId`).
+    - Added comprehensive integration tests in `tests/auth.test.ts` (20/20 tests passing).
 
 ---
 
@@ -300,8 +308,9 @@ JavaScript `JSON.stringify` throws a `TypeError: Do not know how to serialize a 
 
 * [x] **Phase 4: Click Analytics & Background Tracking** (Completed)
 * [x] **Phase 5: Rate Limiting & Abuse Prevention** (Completed)
+* [x] **Phase 6: User Authentication & JWT Ownership** (Completed)
 * [x] **Phase 7: CI/CD GitHub Actions Workflow** (Completed)
-* [ ] **Phase 6: User Authentication & JWT Ownership**
-  - User registration, login, JWT validation middleware, user-scoped URLs.
+* [ ] **List & Manage User URLs (`GET /api/v1/urls`)**
+  - Protected endpoint with `requireAuth` returning user's links with aggregated click counts.
 * [ ] **Multi-stage Production Dockerfile**
   - Minimal Alpine container bundle with health checks.

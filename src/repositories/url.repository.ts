@@ -9,13 +9,14 @@ export const UrlRepository = {
     return result[0].nextval;
   },
 
-  async createWithId(id: bigint, data: CreateUrlInput & { shortCode: string }) {
+  async createWithId(id: bigint, data: CreateUrlInput & { shortCode: string; userId?: string }) {
     return prisma.url.create({
       data: {
         id,
         shortCode: data.shortCode,
         originalUrl: data.originalUrl,
         expiresAt: data.expiresAt ?? null,
+        userId: data.userId ?? null,
       },
     });
   },

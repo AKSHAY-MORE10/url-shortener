@@ -30,11 +30,10 @@ export class GoneError extends Error {
 }
 
 export const UrlService = {
-  async createShortUrl(input: CreateUrlInput): Promise<UrlResponseDTO> {
+  async createShortUrl(input: CreateUrlInput, userId?: string): Promise<UrlResponseDTO> {
     const id = await UrlRepository.getNextId();
     const shortCode = encodeBase62(id);
-
-    const url = await UrlRepository.createWithId(id, { ...input, shortCode });
+    const url = await UrlRepository.createWithId(id, { ...input, shortCode, userId });
     return toResponseDTO(url);
   },
 
