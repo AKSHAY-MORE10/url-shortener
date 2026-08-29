@@ -74,6 +74,26 @@ describe("URL Shortener API Integration Tests", () => {
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("error", "Validation failed");
     });
+
+    it("should enforce rate limiting and return 429 after exceeding capacity", async () => {
+      // Send 10 allowed requests
+      for (let i = 0; i < 10; i++) {
+        const res = await request(app)
+          .post("/api/v1/urls")
+          .send({ originalUrl: "https://example.com" });
+        expect(res.status).toBe(201);
+        expect(res.headers["x-ratelimit-limit"]).toBe("10");
+      }
+
+      // 11th request exceeds burst capacity
+      const blockedRes = await request(app)
+        .post("/api/v1/urls")
+        .send({ originalUrl: "https://example.com" });
+
+      expect(blockedRes.status).toBe(429);
+      expect(blockedRes.body).toHaveProperty("error", "Too many requests. Please try again shortly.");
+      expect(blockedRes.headers["x-ratelimit-remaining"]).toBe("0");
+    });
   });
 
   describe("GET /:code", () => {
