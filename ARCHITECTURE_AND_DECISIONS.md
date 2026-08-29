@@ -289,6 +289,10 @@ JavaScript `JSON.stringify` throws a `TypeError: Do not know how to serialize a 
    - Built `src/utils/hash.ts` for SHA-256 IP hashing (GDPR/privacy-friendly telemetry).
    - Created `src/repositories/clickEvent.repository.ts` and `UrlRepository.incrementClickCount(id)`.
    - Built `src/services/analytics.service.ts` to record user-agent, referrer, and IP hash in fire-and-forget mode without blocking redirects.
+11. **GitHub Actions CI/CD Pipeline (Phase 7)**:
+    - Created `.github/workflows/ci.yml` running ephemeral `postgres:16` and `redis:7-alpine` service containers.
+    - Zero external secrets dependencies — creates isolated disposable database for every commit and PR.
+    - Added `"test:ci": "jest --runInBand"` to `package.json`.
 
 ---
 
@@ -296,7 +300,8 @@ JavaScript `JSON.stringify` throws a `TypeError: Do not know how to serialize a 
 
 * [x] **Phase 4: Click Analytics & Background Tracking** (Completed)
 * [x] **Phase 5: Rate Limiting & Abuse Prevention** (Completed)
+* [x] **Phase 7: CI/CD GitHub Actions Workflow** (Completed)
 * [ ] **Phase 6: User Authentication & JWT Ownership**
   - User registration, login, JWT validation middleware, user-scoped URLs.
-* [ ] **Phase 7: Production Containerization & CI/CD**
-  - Multi-stage Dockerfile, health checks, GitHub Actions CI workflow.
+* [ ] **Multi-stage Production Dockerfile**
+  - Minimal Alpine container bundle with health checks.

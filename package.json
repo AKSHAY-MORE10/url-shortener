@@ -7,6 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "test": "dotenv -e .env.test -- jest --runInBand",
+    "test:ci": "jest --runInBand",
     "loadtest:create": "autocannon -c 20 -d 5 -m POST -H \"Content-Type: application/json\" -b \"{\\\"originalUrl\\\":\\\"https://example.com\\\"}\" --renderStatusCodes http://localhost:3000/api/v1/urls",
     "loadtest:redirect": "autocannon -c 50 -d 10 --renderStatusCodes http://localhost:3000/2c",
     "postinstall": "prisma skills sync || exit 0"
